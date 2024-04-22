@@ -1,0 +1,106 @@
+1st exp cdma -------------------
+import numpy as np
+c1=[1,1,1,1]
+c2=[1,-1,1,-1]
+c3=[1,1,-1,-1]
+c4=[1,-1,-1,1]
+rc=[]
+print("enter the data bits")
+d1=int(input("ENter D1: "))
+d2=int(input("ENter D2: "))
+d3=int(input("ENter D3: "))
+d4=int(input("ENter D4: "))
+r1=np.multiply(c1,d1)
+r2=np.multiply(c2,d2)
+r3=np.multiply(c3,d3)
+r4=np.multiply(c4,d4)
+resultant_channel = r1+r2+r3+r4
+print("Resultant Channel",resultant_channel)
+Channel = int(input("Enter the station to liston for C=c1 =1,c2=2,c3=3,c4=4"))
+if Channel==1:
+    rc=c1
+elif Channel==2:
+    rc=c2
+elif Channel==3:
+    rc=c3
+elif Channel==4:
+    rc=c4
+inner_product = np.multiply(resultant_channel,rc)
+print("Inner Product",inner_product)
+res1=sum(inner_product)
+data=res1/len(inner_product)
+print("data bit that was sent",data)
+
+
+------4ht octave -----------
+clc;
+clear all;
+close all;
+N = 10^6; % number of bits or symbols
+rand('state',100); % initializing the rand() function
+randn('state',200); % initializing the randn() function
+% Transmitter
+ip = rand(1,N)>0.5; % generating 0,1 with equal probability
+s = 2*ip-1; % BPSK modulation 0 -> -1; 1 -> 1
+n = 1/sqrt(2)*[randn(1,N) + 1i*randn(1,N)]; % white gaussian noise, 0dB variance
+Eb_N0_dB = [-3:10]; % multiple Eb/N0 values
+nErr = zeros(1,length(Eb_N0_dB)); % initialize error count
+for ii = 1:length(Eb_N0_dB)
+ % Noise addition
+ y = s + 10^(-Eb_N0_dB(ii)/20)*n; % additive white gaussian noise
+ % receiver - hard decision decoding
+ ipHat = real(y)>0;
+ % counting the errors
+ nErr(ii) = sum(ip ~= ipHat); % count errors
+end
+simBer = nErr/N; % simulated ber
+theoryBer = 0.5*erfc(sqrt(10.^(Eb_N0_dB/10))); % theoretical ber
+% plot
+close all
+figure
+semilogy(Eb_N0_dB,theoryBer,'b.-');
+hold on
+semilogy(Eb_N0_dB,simBer,'mx-');
+axis([-3 10 10^-5 0.5])
+grid on
+legend('theory', 'simulation');
+xlabel('Eb/No, dB');
+ylabel('Bit Error Rate');
+title('Bit error probability curve for BPSK modulation');
+
+-----8th sender
+import socket
+
+soc = socket.socket()
+host = socket.gethostname()
+port = 8084
+soc.bind((host, port))
+soc.listen(1)
+print("Host Name:", host)
+print("Waiting For Client To Connect")
+conn, addr = soc.accept()
+print(addr, "Client Has Connected To Server")
+fileName = input("File Name:")
+file = open(fileName, 'rb')
+fileData = file.read(1024)
+conn.send(fileData)
+print("File Sent")
+---reciver------
+import socket
+
+soc = socket.socket()
+host = input("Enter Host Address:")
+port = 8084
+soc.connect((host, port))
+print("Connected To Server")
+incFile = input("Enter Incoming File Name:")
+file = open(incFile, 'wb')
+incFileDat = soc.recv(1024)
+file.write(incFileDat)
+file.close()
+print("File Received")
+f = open(incFile, 'r')
+recFileContent = f.read()
+print("Received File Is:", recFileContent)
+
+-----
